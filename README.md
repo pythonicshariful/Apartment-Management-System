@@ -135,11 +135,11 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory (or rename/copy the template):
 
 ```env
-FLASK_SECRET_KEY=your_secret_key_here
+FLASK_SECRET_KEY=your_strong_secret_key_here
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_CHAT_ID=your_telegram_channel_chat_id
-NEXTGEN_PASSWORD=NextGen@2024
-LUXURY_PASSWORD=Luxury@2024
+NEXTGEN_PASSWORD=your_nextgen_password
+LUXURY_PASSWORD=your_luxury_password
 ```
 
 > **How to get a Telegram Bot Token:**
@@ -169,10 +169,10 @@ Open your browser and navigate to: **http://127.0.0.1:5000**
 
 | Company | Role | Password |
 |---|---|---|
-| 🏢 NextGen Design and Developers Ltd. | Operator | `NextGen@2024` |
-| 💎 Luxury Construction | Operator | `Luxury@2024` |
+| 🏢 NextGen Design and Developers Ltd. | Operator | *(set in `.env` → `NEXTGEN_PASSWORD`)* |
+| 💎 Luxury Construction | Operator | *(set in `.env` → `LUXURY_PASSWORD`)* |
 
-> ⚠️ **Change passwords** by updating the `.env` file before deploying to production.
+> ⚠️ **Never share your `.env` file.** Set strong passwords before running the application.
 
 ### Booking Workflow
 
