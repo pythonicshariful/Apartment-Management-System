@@ -1,0 +1,85 @@
+<!-- ── Profile View Overlay ───────────────────────────────────────────────── -->
+<div class="ams-overlay" id="profileOverlay">
+  <div class="ams-dialog ams-dialog-md" role="dialog" aria-labelledby="profileTitle">
+
+    <div class="ams-dialog-header">
+      <h5 class="ams-dialog-title" id="profileTitle">
+        <i class="bi bi-person-vcard-fill text-info me-2"></i>
+        Tenant Profile — <span id="profileAptId" class="text-gold"></span>
+      </h5>
+      <button class="ams-dialog-close" onclick="closeProfileModal()" title="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="ams-dialog-body" id="profileModalBody">
+
+      <!-- Loader -->
+      <div class="text-center py-5" id="profileLoader">
+        <div class="spinner-border text-info" role="status"></div>
+        <div class="text-muted small mt-2">Loading profile…</div>
+      </div>
+
+      <!-- Content -->
+      <div id="profileContent" class="d-none">
+        <!-- Avatar -->
+        <div class="text-center mb-4">
+          <div class="profile-avatar mx-auto">
+            <img id="profilePicImg" src="" alt="Profile" class="profile-pic-img d-none"/>
+            <div id="profilePicDefault" class="profile-pic-default">
+              <i class="bi bi-person-fill"></i>
+            </div>
+          </div>
+          <h5 class="mt-3 mb-0 fw-bold" id="profileName"></h5>
+          <div class="mt-1" id="profileCompanyBadge"></div>
+        </div>
+
+        <!-- Details -->
+        <div class="profile-details">
+          <div class="profile-detail-row">
+            <span class="detail-label">
+              <i class="bi bi-telephone-fill text-gold me-2"></i>Phone
+            </span>
+            <span class="detail-value" id="profilePhone"></span>
+          </div>
+          <div class="profile-detail-row">
+            <span class="detail-label">
+              <i class="bi bi-geo-alt-fill text-gold me-2"></i>Address
+            </span>
+            <span class="detail-value" id="profileAddress"></span>
+          </div>
+          <div class="profile-detail-row">
+            <span class="detail-label">
+              <i class="bi bi-calendar3 text-gold me-2"></i>Booked On
+            </span>
+            <span class="detail-value" id="profileBookedAt"></span>
+          </div>
+          <div class="profile-detail-row" id="profileDocRow">
+            <span class="detail-label">
+              <i class="bi bi-file-earmark-text text-gold me-2"></i>Document
+            </span>
+            <span class="detail-value">
+              <a id="profileDocLink" href="#" target="_blank" class="btn btn-outline-info btn-sm">
+                <i class="bi bi-download me-1"></i>Download
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div id="profileError" class="d-none text-center py-4 text-danger">
+        <i class="bi bi-x-circle fs-3"></i>
+        <div class="mt-2 small">Failed to load profile.</div>
+      </div>
+
+    </div>
+
+    <div class="ams-dialog-footer">
+      <button type="button" class="btn btn-outline-secondary" onclick="closeProfileModal()">
+        Close
+      </button>
+    </div>
+
+  </div>
+</div>

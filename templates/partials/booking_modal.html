@@ -1,0 +1,105 @@
+<!-- ── Booking Overlay ────────────────────────────────────────────────────── -->
+<div class="ams-overlay" id="bookingOverlay">
+  <div class="ams-dialog" role="dialog" aria-labelledby="bookingTitle">
+
+    <div class="ams-dialog-header">
+      <h5 class="ams-dialog-title" id="bookingTitle">
+        <i class="bi bi-calendar-plus-fill text-success me-2"></i>
+        Book Apartment <span id="bookingAptId" class="text-gold"></span>
+      </h5>
+      <button class="ams-dialog-close" onclick="closeBookingModal()" title="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <form id="bookingForm" method="POST" action="" enctype="multipart/form-data">
+      <div class="ams-dialog-body">
+        <p class="text-muted small mb-3">Fill in tenant details to complete the booking</p>
+
+        <div class="row g-3">
+          <!-- Name -->
+          <div class="col-12 col-md-6">
+            <label for="book_name" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-person-fill me-1 text-gold"></i>Full Name *
+            </label>
+            <input type="text" class="form-control form-control-glass"
+                   id="book_name" name="name" placeholder="e.g. John Doe" required />
+          </div>
+
+          <!-- Phone -->
+          <div class="col-12 col-md-6">
+            <label for="book_phone" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-telephone-fill me-1 text-gold"></i>Phone Number *
+            </label>
+            <input type="tel" class="form-control form-control-glass"
+                   id="book_phone" name="phone" placeholder="e.g. +880 1700-000000" required />
+          </div>
+
+          <!-- Address -->
+          <div class="col-12">
+            <label for="book_address" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-geo-alt-fill me-1 text-gold"></i>Home Address *
+            </label>
+            <textarea class="form-control form-control-glass" id="book_address"
+                      name="address" rows="2" placeholder="Full mailing address" required></textarea>
+          </div>
+
+          <!-- Profile Picture -->
+          <div class="col-12 col-md-6">
+            <label for="book_profile_pic" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-image-fill me-1 text-gold"></i>Profile Photo
+              <span class="text-muted">(optional)</span>
+            </label>
+            <div class="file-upload-area" id="bookPicArea">
+              <input type="file" class="file-input" id="book_profile_pic"
+                     name="profile_pic" accept="image/*"
+                     onchange="previewImage(this, 'bookPicPreview', 'bookPicArea')" />
+              <div class="file-upload-content">
+                <img id="bookPicPreview" src="" alt="Preview" class="file-preview d-none" />
+                <div id="bookPicPlaceholder">
+                  <i class="bi bi-cloud-arrow-up fs-3 text-muted"></i>
+                  <div class="small text-muted mt-1">Click to upload image</div>
+                  <div class="tiny text-muted">PNG, JPG, WEBP up to 16MB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document -->
+          <div class="col-12 col-md-6">
+            <label for="book_document" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-file-earmark-fill me-1 text-gold"></i>ID Document
+              <span class="text-muted">(optional)</span>
+            </label>
+            <div class="file-upload-area" id="bookDocArea">
+              <input type="file" class="file-input" id="book_document"
+                     name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                     onchange="previewDocument(this, 'bookDocPreview', 'bookDocArea')" />
+              <div class="file-upload-content">
+                <div id="bookDocPreview" class="file-doc-preview d-none">
+                  <i class="bi bi-file-earmark-check text-success fs-3"></i>
+                  <span id="bookDocName" class="small ms-2 text-light"></span>
+                </div>
+                <div id="bookDocPlaceholder">
+                  <i class="bi bi-file-earmark-arrow-up fs-3 text-muted"></i>
+                  <div class="small text-muted mt-1">Click to upload document</div>
+                  <div class="tiny text-muted">PDF, DOC, DOCX, Image</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ams-dialog-footer">
+        <button type="button" class="btn btn-outline-secondary" onclick="closeBookingModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-success fw-semibold px-4" id="bookSubmitBtn">
+          <i class="bi bi-check-circle-fill me-1"></i>Confirm Booking
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>

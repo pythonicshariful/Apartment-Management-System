@@ -1,0 +1,122 @@
+<div class="col-12 col-sm-6 col-xl-3">
+  <div class="apt-card glass-card {{ 'apt-booked' if is_booked else 'apt-available' }} animate-fade-in"
+       id="card-{{ apt.id }}">
+
+    <!-- Card Header -->
+    <div class="apt-card-header d-flex align-items-start justify-content-between">
+      <div>
+        <div class="apt-id">{{ apt.id }}</div>
+        <div class="apt-floor text-muted small">
+          Floor {{ apt.id[0] }} &bull; Unit {{ apt.id[1] }}
+        </div>
+      </div>
+      <span class="apt-badge {% if is_booked %}badge-booked{% else %}badge-available{% endif %}">
+        {% if is_booked %}
+          <i class="bi bi-lock-fill me-1"></i>Booked
+        {% else %}
+          <i class="bi bi-check-circle-fill me-1"></i>Available
+        {% endif %}
+      </span>
+    </div>
+
+    <!-- Status Visual -->
+    <div class="apt-status-visual my-3">
+      {% if is_booked %}
+        <!-- Booked: show avatar + name -->
+        <div class="d-flex align-items-center gap-3">
+          <div class="tenant-avatar">
+            {% if apt.profile_pic %}
+              <img src="{{ url_for('static', filename=apt.profile_pic) }}"
+                   alt="{{ apt.name }}" class="tenant-img"/>
+            {% else %}
+              <div class="tenant-placeholder">
+                <i class="bi bi-person-fill"></i>
+              </div>
+            {% endif %}
+          </div>
+          <div>
+            <div class="tenant-name">{{ apt.name }}</div>
+            <div class="tenant-phone text-muted small">
+              <i class="bi bi-telephone-fill me-1"></i>{{ apt.phone }}
+            </div>
+            <div class="company-tag mt-1">
+              {% if apt.booked_by == 'nextgen' %}
+                <span class="tag-nextgen">
+                  <i class="bi bi-building me-1"></i>NextGen
+                </span>
+              {% elif apt.booked_by == 'luxury' %}
+                <span class="tag-luxury">
+                  <i class="bi bi-gem me-1"></i>Luxury
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% if apt.booked_at %}
+        <div class="booked-since text-muted small mt-2">
+          <i class="bi bi-calendar3 me-1"></i>Since {{ apt.booked_at[:10] }}
+        </div>
+        {% endif %}
+      {% else %}
+        <!-- Available: show icon placeholder -->
+        <div class="available-placeholder text-center py-2">
+          <i class="bi bi-house-door text-success" style="font-size:2.8rem; opacity:.6;"></i>
+          <div class="text-muted small mt-1">Ready to Book</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Divider -->
+    <div class="apt-divider"></div>
+
+    <!-- Action Buttons -->
+    <div class="apt-actions d-flex flex-column gap-2 mt-3">
+
+      {% if not is_booked and can_book %}
+      <!-- Book Now -->
+      <button type="button"
+              class="btn btn-success btn-sm fw-semibold"
+              onclick="openBookingModal('{{ apt.id }}')"
+              id="btn-book-{{ apt.id }}">
+        <i class="bi bi-calendar-plus-fill me-1"></i>Book Now
+      </button>
+      {% endif %}
+
+      {% if is_booked %}
+      <!-- View Profile (always visible to logged-in users) -->
+      <button type="button"
+              class="btn btn-info btn-sm fw-semibold"
+              onclick="openProfileModal('{{ apt.id }}')"
+              id="btn-profile-{{ apt.id }}">
+        <i class="bi bi-person-lines-fill me-1"></i>View Profile
+      </button>
+
+      {% if is_owner %}
+      <!-- Edit Details — only for owner company or admin -->
+      <button type="button"
+              class="btn btn-warning btn-sm fw-semibold"
+              onclick="openEditModal('{{ apt.id }}', '{{ apt.name }}', '{{ apt.address }}', '{{ apt.phone }}')"
+              id="btn-edit-{{ apt.id }}">
+        <i class="bi bi-pencil-fill me-1"></i>Edit Details
+      </button>
+
+      <!-- Cancel Booking — danger -->
+      <button type="button"
+              class="btn btn-danger btn-sm fw-semibold"
+              onclick="openCancelModal('{{ apt.id }}')"
+              id="btn-cancel-{{ apt.id }}">
+        <i class="bi bi-x-circle-fill me-1"></i>Cancel Booking
+      </button>
+      {% endif %}
+      {% endif %}
+
+      {% if not is_booked and not can_book and current_role not in ('nextgen', 'luxury') %}
+      <div class="text-center text-muted small py-1">
+        <i class="bi bi-eye me-1"></i>View Only
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+</div>

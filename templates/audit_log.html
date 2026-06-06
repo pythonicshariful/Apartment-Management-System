@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Audit Log — AMS{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css"/>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h1 class="page-title mb-1">
+        <i class="bi bi-journal-text me-2 text-gold"></i>Audit Log
+      </h1>
+      <p class="text-muted small mb-0">
+        Complete history of all system events &mdash; {{ logs|length }} records
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+      </a>
+      <button class="btn btn-outline-success btn-sm" onclick="exportCSV()">
+        <i class="bi bi-filetype-csv me-1"></i>Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  {% set book_count   = logs | selectattr('action','eq','BOOK')   | list | length %}
+  {% set edit_count   = logs | selectattr('action','eq','EDIT')   | list | length %}
+  {% set cancel_count = logs | selectattr('action','eq','CANCEL') | list | length %}
+  {% set login_count  = logs | selectattr('action','eq','LOGIN')  | list | length %}
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card glass-card-sm text-center">
+        <div class="stat-icon text-success"><i class="bi bi-calendar-plus"></i></div>
+        <div class="stat-value text-success">{{ book_count }}</div>
+        <div class="stat-label">Bookings</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card glass-card-sm text-center">
+        <div class="stat-icon text-warning"><i class="bi bi-pencil"></i></div>
+        <div class="stat-value text-warning">{{ edit_count }}</div>
+        <div class="stat-label">Edits</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card glass-card-sm text-center">
+        <div class="stat-icon text-danger"><i class="bi bi-x-circle"></i></div>
+        <div class="stat-value text-danger">{{ cancel_count }}</div>
+        <div class="stat-label">Cancellations</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card glass-card-sm text-center">
+        <div class="stat-icon text-info"><i class="bi bi-box-arrow-in-right"></i></div>
+        <div class="stat-value text-info">{{ login_count }}</div>
+        <div class="stat-label">Logins</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="glass-card p-3">
+    <div class="table-responsive">
+      <table id="auditTable" class="table table-dark table-hover align-middle mb-0"
+             style="width:100%">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>Performed By</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr class="audit-row-{{ log.action|lower }}">
+            <td class="text-muted small">{{ log.id }}</td>
+            <td class="small text-nowrap">
+              <i class="bi bi-clock me-1 text-muted"></i>{{ log.timestamp }}
+            </td>
+            <td>
+              {% if log.action == 'BOOK' %}
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2 py-1">
+                  <i class="bi bi-calendar-plus-fill me-1"></i>BOOK
+                </span>
+              {% elif log.action == 'EDIT' %}
+                <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 px-2 py-1">
+                  <i class="bi bi-pencil-fill me-1"></i>EDIT
+                </span>
+              {% elif log.action == 'CANCEL' %}
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 px-2 py-1">
+                  <i class="bi bi-x-circle-fill me-1"></i>CANCEL
+                </span>
+              {% elif log.action == 'LOGIN' %}
+                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 px-2 py-1">
+                  <i class="bi bi-box-arrow-in-right me-1"></i>LOGIN
+                </span>
+              {% elif log.action == 'LOGOUT' %}
+                <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25 px-2 py-1">
+                  <i class="bi bi-box-arrow-right me-1"></i>LOGOUT
+                </span>
+              {% else %}
+                <span class="badge bg-secondary text-white px-2 py-1">{{ log.action }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if log.performed_by == 'admin' %}
+                <span class="text-warning">
+                  <i class="bi bi-shield-fill-check me-1"></i>Administrator
+                </span>
+              {% elif log.performed_by == 'nextgen' %}
+                <span class="text-info">
+                  <i class="bi bi-building me-1"></i>NextGen
+                </span>
+              {% elif log.performed_by == 'luxury' %}
+                <span class="text-purple">
+                  <i class="bi bi-gem me-1"></i>Luxury
+                </span>
+              {% else %}
+                {{ log.performed_by }}
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ log.details }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('#auditTable').DataTable({
+      order: [[0, 'desc']],
+      pageLength: 25,
+      language: {
+        search: '<i class="bi bi-search me-1"></i>Search:',
+        paginate: { previous: '‹', next: '›' }
+      }
+    });
+  });
+
+  function exportCSV() {
+    const rows  = [['ID','Timestamp','Action','Performed By','Details']];
+    const tbody = document.querySelectorAll('#auditTable tbody tr');
+    tbody.forEach(tr => {
+      const cells = tr.querySelectorAll('td');
+      rows.push([...cells].map(td => '"' + td.innerText.trim().replace(/"/g,'""') + '"'));
+    });
+    const csv  = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'audit_log_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+# Environment & secrets
+.env
+
+# SQLite database
+*.db
+
+# Uploaded files
+static/uploads/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

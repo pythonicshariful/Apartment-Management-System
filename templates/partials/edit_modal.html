@@ -1,0 +1,103 @@
+<!-- ── Edit Overlay ────────────────────────────────────────────────────────── -->
+<div class="ams-overlay" id="editOverlay">
+  <div class="ams-dialog" role="dialog" aria-labelledby="editTitle">
+
+    <div class="ams-dialog-header">
+      <h5 class="ams-dialog-title" id="editTitle">
+        <i class="bi bi-pencil-fill text-warning me-2"></i>
+        Edit Booking — Apartment <span id="editAptId" class="text-gold"></span>
+      </h5>
+      <button class="ams-dialog-close" onclick="closeEditModal()" title="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <form id="editForm" method="POST" action="" enctype="multipart/form-data">
+      <div class="ams-dialog-body">
+        <p class="text-muted small mb-3">Update tenant information below</p>
+
+        <div class="row g-3">
+          <!-- Name -->
+          <div class="col-12 col-md-6">
+            <label for="edit_name" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-person-fill me-1 text-warning"></i>Full Name *
+            </label>
+            <input type="text" class="form-control form-control-glass"
+                   id="edit_name" name="name" required />
+          </div>
+
+          <!-- Phone -->
+          <div class="col-12 col-md-6">
+            <label for="edit_phone" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-telephone-fill me-1 text-warning"></i>Phone Number *
+            </label>
+            <input type="tel" class="form-control form-control-glass"
+                   id="edit_phone" name="phone" required />
+          </div>
+
+          <!-- Address -->
+          <div class="col-12">
+            <label for="edit_address" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-geo-alt-fill me-1 text-warning"></i>Home Address *
+            </label>
+            <textarea class="form-control form-control-glass" id="edit_address"
+                      name="address" rows="2" required></textarea>
+          </div>
+
+          <!-- Profile Picture -->
+          <div class="col-12 col-md-6">
+            <label for="edit_profile_pic" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-image-fill me-1 text-warning"></i>Profile Photo
+              <span class="text-muted">(leave blank to keep existing)</span>
+            </label>
+            <div class="file-upload-area" id="editPicArea">
+              <input type="file" class="file-input" id="edit_profile_pic"
+                     name="profile_pic" accept="image/*"
+                     onchange="previewImage(this, 'editPicPreview', 'editPicArea')" />
+              <div class="file-upload-content">
+                <img id="editPicPreview" src="" alt="Preview" class="file-preview d-none" />
+                <div id="editPicPlaceholder">
+                  <i class="bi bi-cloud-arrow-up fs-3 text-muted"></i>
+                  <div class="small text-muted mt-1">Click to replace photo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document -->
+          <div class="col-12 col-md-6">
+            <label for="edit_document" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-file-earmark-fill me-1 text-warning"></i>ID Document
+              <span class="text-muted">(leave blank to keep existing)</span>
+            </label>
+            <div class="file-upload-area" id="editDocArea">
+              <input type="file" class="file-input" id="edit_document"
+                     name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                     onchange="previewDocument(this, 'editDocPreview', 'editDocArea')" />
+              <div class="file-upload-content">
+                <div id="editDocPreview" class="file-doc-preview d-none">
+                  <i class="bi bi-file-earmark-check text-success fs-3"></i>
+                  <span id="editDocName" class="small ms-2 text-light"></span>
+                </div>
+                <div id="editDocPlaceholder">
+                  <i class="bi bi-file-earmark-arrow-up fs-3 text-muted"></i>
+                  <div class="small text-muted mt-1">Click to replace document</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ams-dialog-footer">
+        <button type="button" class="btn btn-outline-secondary" onclick="closeEditModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-warning fw-semibold px-4 text-dark" id="editSubmitBtn">
+          <i class="bi bi-save-fill me-1"></i>Save Changes
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>

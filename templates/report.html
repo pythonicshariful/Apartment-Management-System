@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apartment Status Report — {{ generated_at }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .report-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ───────────────────────────────────────────── */
+    .report-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f172a 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 2.5rem 2.5rem 2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-header::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(240,180,41,0.18) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .report-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .report-logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #f0b429, #e07b00);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .report-company { line-height: 1.3; }
+    .report-company-main {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f0b429;
+    }
+    .report-company-sub {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .report-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.3rem;
+    }
+    .report-title span { color: #f0b429; }
+
+    .report-meta {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.55);
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+    .report-meta span { display: flex; align-items: center; gap: 0.35rem; }
+
+    /* ── Summary cards ────────────────────────────────────── */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .summary-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.2rem 1.4rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      border-left: 4px solid transparent;
+    }
+    .summary-card.total   { border-color: #3b82f6; }
+    .summary-card.avail   { border-color: #22c55e; }
+    .summary-card.booked  { border-color: #ef4444; }
+
+    .summary-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+    }
+    .summary-card.total  .summary-number { color: #3b82f6; }
+    .summary-card.avail  .summary-number { color: #22c55e; }
+    .summary-card.booked .summary-number { color: #ef4444; }
+
+    .summary-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      font-weight: 600;
+      margin-top: 0.15rem;
+    }
+
+    /* ── Table ────────────────────────────────────────────── */
+    .report-table-wrapper {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .report-table-title {
+      padding: 1.2rem 1.6rem 0.8rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      background: #f8fafc;
+      padding: 0.75rem 1.4rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #94a3b8;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.12s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    tbody td {
+      padding: 1rem 1.4rem;
+      font-size: 0.875rem;
+      color: #1e293b;
+      vertical-align: middle;
+    }
+
+    /* Apt ID cell */
+    .apt-id-cell {
+      font-size: 1.3rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: #0f172a;
+    }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .status-available {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    .status-booked {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    /* Company badges */
+    .company-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .company-nextgen {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .company-luxury {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+
+    /* Tenant name */
+    .tenant-name-cell { font-weight: 600; color: #0f172a; }
+    .tenant-phone     { font-size: 0.78rem; color: #64748b; margin-top: 0.15rem; }
+
+    /* Available row soft green tint */
+    .row-available { background: rgba(240, 253, 244, 0.5); }
+
+    /* ── Actions bar ──────────────────────────────────────── */
+    .report-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .btn-report {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-print {
+      background: linear-gradient(135deg, #f0b429, #e07b00);
+      color: #000;
+      box-shadow: 0 3px 12px rgba(240,180,41,0.3);
+    }
+    .btn-print:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-back {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .btn-back:hover { background: #e2e8f0; }
+
+    .btn-csv {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+    .btn-csv:hover { background: #bbf7d0; }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    .report-footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      padding: 1rem 0 0.5rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* ── Print styles ─────────────────────────────────────── */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .report-actions { display: none; }
+      .report-header { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .report-table-wrapper, .summary-card { box-shadow: none; border: 1px solid #e2e8f0; }
+      .summary-row { break-inside: avoid; }
+      table { page-break-inside: auto; }
+      tr { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="report-wrapper">
+
+  <!-- Action buttons (hidden on print) -->
+  <div class="report-actions">
+    <a href="{{ url_for('dashboard') }}" class="btn-report btn-back">
+      &#8592; Back to Dashboard
+    </a>
+    <a href="{{ url_for('report_csv') }}" class="btn-report btn-csv">
+      &#8659; Download CSV
+    </a>
+    <button onclick="window.print()" class="btn-report btn-print">
+      &#128438; Print / Save as PDF
+    </button>
+  </div>
+
+  <!-- Report Header -->
+  <div class="report-header">
+    <div class="report-logo">
+      <div class="report-logo-icon">&#127968;</div>
+      <div class="report-company">
+        <div class="report-company-main">NextGen Design and Developers Ltd.</div>
+        <div class="report-company-sub">in partnership with Luxury Construction</div>
+      </div>
+    </div>
+    <h1 class="report-title">Apartment <span>Status</span> Report</h1>
+    <div class="report-meta">
+      <span>&#128197; Generated: {{ generated_at }}</span>
+      <span>&#127968; Total Units: {{ apartments|length }}</span>
+      {% set booked_c = apartments|selectattr('status','eq','Booked')|list|length %}
+      <span>&#128274; Occupancy: {{ ((booked_c / apartments|length) * 100)|int if apartments else 0 }}%</span>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  {% set booked_count = apartments|selectattr('status','eq','Booked')|list|length %}
+  {% set avail_count  = apartments|length - booked_count %}
+  <div class="summary-row">
+    <div class="summary-card total">
+      <div class="summary-number">{{ apartments|length }}</div>
+      <div class="summary-label">Total Units</div>
+    </div>
+    <div class="summary-card avail">
+      <div class="summary-number">{{ avail_count }}</div>
+      <div class="summary-label">Available</div>
+    </div>
+    <div class="summary-card booked">
+      <div class="summary-number">{{ booked_count }}</div>
+      <div class="summary-label">Booked</div>
+    </div>
+  </div>
+
+  <!-- Main Table -->
+  <div class="report-table-wrapper">
+    <div class="report-table-title">&#128203; Apartment Listing</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Unit</th>
+          <th>Status</th>
+          <th>Booked By</th>
+          <th>Tenant Name &amp; Phone</th>
+          <th>Address</th>
+          <th>Since</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for apt in apartments %}
+        {% set is_booked = apt.status == 'Booked' %}
+        <tr class="{{ '' if is_booked else 'row-available' }}">
+
+          <!-- Unit ID -->
+          <td>
+            <div class="apt-id-cell">{{ apt.id }}</div>
+            <div style="font-size:0.7rem;color:#94a3b8;">Floor {{ apt.id[0] }} · Unit {{ apt.id[1] }}</div>
+          </td>
+
+          <!-- Status -->
+          <td>
+            {% if is_booked %}
+              <span class="status-badge status-booked">&#128274; Booked</span>
+            {% else %}
+              <span class="status-badge status-available">&#10003; Available</span>
+            {% endif %}
+          </td>
+
+          <!-- Company -->
+          <td>
+            {% if is_booked %}
+              {% if apt.booked_by == 'nextgen' %}
+                <span class="company-badge company-nextgen">&#127970; NextGen</span>
+              {% elif apt.booked_by == 'luxury' %}
+                <span class="company-badge company-luxury">&#128142; Luxury</span>
+              {% endif %}
+            {% else %}
+              <span style="color:#94a3b8;font-size:0.8rem;">—</span>
+            {% endif %}
+          </td>
+
+          <!-- Tenant -->
+          <td>
+            {% if is_booked and apt.name %}
+              <div class="tenant-name-cell">{{ apt.name }}</div>
+              <div class="tenant-phone">{{ apt.phone }}</div>
+            {% else %}
+              <span style="color:#94a3b8;font-size:0.82rem;font-style:italic;">No tenant</span>
+            {% endif %}
+          </td>
+
+          <!-- Address -->
+          <td style="max-width:200px; font-size:0.8rem; color:#475569;">
+            {% if is_booked and apt.address %}
+              {{ apt.address }}
+            {% else %}
+              <span style="color:#94a3b8;">—</span>
+            {% endif %}
+          </td>
+
+          <!-- Booked since -->
+          <td style="font-size:0.8rem; color:#64748b; white-space:nowrap;">
+            {% if is_booked and apt.booked_at %}
+              {{ apt.booked_at[:10] }}
+            {% else %}
+              <span style="color:#94a3b8;">—</span>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="report-footer">
+    &copy; {{ generated_at.split(',')[0].split(' ')[-1] }}
+    NextGen Design and Developers Ltd. &amp; Luxury Construction — Confidential
+  </div>
+
+</div>
+</body>
+</html>
