@@ -71,9 +71,7 @@
               <span class="text-muted">(leave blank to keep existing)</span>
             </label>
             <div class="file-upload-area" id="editDocArea">
-              <input type="file" class="file-input" id="edit_document"
-                     name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
-                     onchange="previewDocument(this, 'editDocPreview', 'editDocArea')" />
+              <input type="file" name="document" id="editDocument" class="file-input" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple onchange="previewDocument(this, 'editDocPreview', 'editDocArea')"/>
               <div class="file-upload-content">
                 <div id="editDocPreview" class="file-doc-preview d-none">
                   <i class="bi bi-file-earmark-check text-success fs-3"></i>

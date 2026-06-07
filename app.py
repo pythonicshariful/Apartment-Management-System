@@ -9,6 +9,7 @@ from functools import wraps
 
 from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, jsonify, abort)
+import json
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
@@ -29,7 +30,6 @@ ALLOWED_DOCS    = {"pdf", "png", "jpg", "jpeg", "doc", "docx"}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
 
 # Credentials loaded from .env
 CREDENTIALS = {
@@ -198,12 +198,16 @@ def book(apt_id):
             return redirect(url_for("dashboard"))
         profile_pic = save_upload(pic_file, "profiles")
 
-    doc_file = request.files.get("document")
-    if doc_file and doc_file.filename:
-        if not allowed_doc(doc_file.filename):
-            flash("Document must be PDF, image, DOC or DOCX.", "danger")
-            return redirect(url_for("dashboard"))
-        document_path = save_upload(doc_file, "documents")
+    doc_paths = []
+    doc_files = request.files.getlist("document")
+    for df in doc_files:
+        if df and df.filename:
+            if not allowed_doc(df.filename):
+                flash("One of the documents is invalid. Must be PDF, image, DOC or DOCX.", "danger")
+                return redirect(url_for("dashboard"))
+            doc_paths.append(save_upload(df, "documents"))
+
+    document_path = json.dumps(doc_paths) if doc_paths else None
 
     db.book_apartment(apt_id, role, name, address, phone, profile_pic, document_path, total_price, booking_money, due_amount)
     db.log_audit("BOOK", role,
@@ -259,12 +263,30 @@ def edit(apt_id):
             return redirect(url_for("dashboard"))
         profile_pic = save_upload(pic_file, "profiles")
 
-    doc_file = request.files.get("document")
-    if doc_file and doc_file.filename:
-        if not allowed_doc(doc_file.filename):
-            flash("Document must be PDF, image, DOC or DOCX.", "danger")
-            return redirect(url_for("dashboard"))
-        document_path = save_upload(doc_file, "documents")
+    doc_paths = []
+    doc_files = request.files.getlist("document")
+    for df in doc_files:
+        if df and df.filename:
+            if not allowed_doc(df.filename):
+                flash("One of the documents is invalid. Must be PDF, image, DOC or DOCX.", "danger")
+                return redirect(url_for("dashboard"))
+            doc_paths.append(save_upload(df, "documents"))
+            
+    document_path = None
+    if doc_paths:
+        existing_docs_str = apartment.get("document_path")
+        if existing_docs_str:
+            try:
+                existing_docs = json.loads(existing_docs_str)
+                if not isinstance(existing_docs, list):
+                    existing_docs = [existing_docs_str]
+            except:
+                existing_docs = [existing_docs_str]
+        else:
+            existing_docs = []
+            
+        existing_docs.extend(doc_paths)
+        document_path = json.dumps(existing_docs)
 
     db.edit_customer(apt_id, name, address, phone, profile_pic, document_path, total_price, booking_money, due_amount)
     db.log_audit("EDIT", role,
@@ -319,13 +341,23 @@ def profile(apt_id):
     apartment = db.get_apartment(apt_id)
     if not apartment or apartment["status"] != "Booked":
         return jsonify({"error": "No active booking found."}), 404
+    doc_str = apartment.get("document_path")
+    doc_list = []
+    if doc_str:
+        try:
+            doc_list = json.loads(doc_str)
+            if not isinstance(doc_list, list):
+                doc_list = [doc_str]
+        except:
+            doc_list = [doc_str]
+
     return jsonify({
         "apt_id":       apt_id,
         "name":         apartment.get("name"),
         "phone":        apartment.get("phone"),
         "address":      apartment.get("address"),
         "profile_pic":  apartment.get("profile_pic"),
-        "document":     apartment.get("document_path"),
+        "document":     doc_list,
         "booked_by":    apartment.get("booked_by"),
         "booked_at":    apartment.get("booked_at"),
         "total_price":  apartment.get("total_price", 0),

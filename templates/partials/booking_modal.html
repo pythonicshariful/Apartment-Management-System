@@ -72,9 +72,7 @@
               <span class="text-muted">(optional)</span>
             </label>
             <div class="file-upload-area" id="bookDocArea">
-              <input type="file" class="file-input" id="book_document"
-                     name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
-                     onchange="previewDocument(this, 'bookDocPreview', 'bookDocArea')" />
+              <input type="file" name="document" id="book_document" class="file-input" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple onchange="previewDocument(this, 'bookDocPreview', 'bookDocArea')"/>
               <div class="file-upload-content">
                 <div id="bookDocPreview" class="file-doc-preview d-none">
                   <i class="bi bi-file-earmark-check text-success fs-3"></i>
@@ -82,8 +80,8 @@
                 </div>
                 <div id="bookDocPlaceholder">
                   <i class="bi bi-file-earmark-arrow-up fs-3 text-muted"></i>
-                  <div class="small text-muted mt-1">Click to upload document</div>
-                  <div class="tiny text-muted">PDF, DOC, DOCX, Image</div>
+                  <div class="small fw-semibold mt-2">Upload Document(s)</div>
+                  <div class="text-muted" style="font-size:0.75rem;">PDF, DOC, DOCX, Image (Multiple allowed)</div>
                 </div>
               </div>
             </div>
