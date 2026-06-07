@@ -58,7 +58,7 @@
 ## 🚀 Features
 
 ### 🏘️ Apartment Management
-- **4 apartment units**: A1, A2, B1, B2 — pre-seeded on first run
+- **84 apartment units**: A1 to F14 — pre-seeded on first run
 - **Real-time status grid** — color-coded cards (🟢 Green = Available, 🔴 Red = Booked)
 - **Live occupancy stats** — Total, Available, Booked, Occupancy % updated every 30 seconds
 - **Anti-double-booking** — server-side validation prevents concurrent booking of the same unit
@@ -269,10 +269,10 @@ Apartment-Management-System/
 ## 🗄️ Database Schema
 
 ```sql
--- Apartments (4 units: A1, A2, B1, B2)
+-- Apartments (84 units: A1 to F14)
 CREATE TABLE apartments (
-    id        TEXT PRIMARY KEY,       -- 'A1', 'A2', 'B1', 'B2'
-    status    TEXT NOT NULL,          -- 'Available' | 'Booked'
+    id        TEXT PRIMARY KEY,       -- 'A1', 'A2', ..., 'F14'
+    status    TEXT NOT NULL DEFAULT 'Available',
     booked_by TEXT DEFAULT NULL       -- 'nextgen' | 'luxury' | NULL
 );
 

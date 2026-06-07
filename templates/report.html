@@ -310,8 +310,7 @@
     <div class="report-logo">
       <div class="report-logo-icon">&#127968;</div>
       <div class="report-company">
-        <div class="report-company-main">NextGen Design and Developers Ltd.</div>
-        <div class="report-company-sub">in partnership with Luxury Construction</div>
+        <div class="report-company-main">Nextgen Luxury Tower</div>
       </div>
     </div>
     <h1 class="report-title">Apartment <span>Status</span> Report</h1>
@@ -363,7 +362,8 @@
           <!-- Unit ID -->
           <td>
             <div class="apt-id-cell">{{ apt.id }}</div>
-            <div style="font-size:0.7rem;color:#94a3b8;">Floor {{ apt.id[0] }} · Unit {{ apt.id[1] }}</div>
+            {% set series_dir = {'A': 'North East', 'B': 'North Middle', 'C': 'North West', 'D': 'South West', 'E': 'South Middle', 'F': 'South East'} %}
+            <div style="font-size:0.7rem;color:#94a3b8;">Floor {{ apt.id[1:] }} &middot; Unit {{ apt.id[0] }} &middot; {{ series_dir.get(apt.id[0], '') }}</div>
           </td>
 
           <!-- Status -->
@@ -378,11 +378,7 @@
           <!-- Company -->
           <td>
             {% if is_booked %}
-              {% if apt.booked_by == 'nextgen' %}
-                <span class="company-badge company-nextgen">&#127970; NextGen</span>
-              {% elif apt.booked_by == 'luxury' %}
-                <span class="company-badge company-luxury">&#128142; Luxury</span>
-              {% endif %}
+              <span class="company-badge company-{{ 'nextgen' if apt.booked_by == 'nextgen' else 'luxury' }}">&#127970; {{ COMPANY_DISPLAY.get(apt.booked_by, apt.booked_by) }}</span>
             {% else %}
               <span style="color:#94a3b8;font-size:0.8rem;">—</span>
             {% endif %}
@@ -425,7 +421,7 @@
   <!-- Footer -->
   <div class="report-footer">
     &copy; {{ generated_at.split(',')[0].split(' ')[-1] }}
-    NextGen Design and Developers Ltd. &amp; Luxury Construction — Confidential
+    Nextgen Luxury Tower — Confidential
   </div>
 
 </div>

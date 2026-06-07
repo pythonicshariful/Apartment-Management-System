@@ -5,10 +5,9 @@ from datetime import datetime
 DB_PATH = os.path.join(os.path.dirname(__file__), 'apartments.db')
 
 APARTMENTS = [
-    ('A1', 'Available', None),
-    ('A2', 'Available', None),
-    ('B1', 'Available', None),
-    ('B2', 'Available', None),
+    (f"{block}{num}", 'Available', None)
+    for block in ['A', 'B', 'C', 'D', 'E', 'F']
+    for num in range(1, 15)
 ]
 
 def get_db():
@@ -44,9 +43,19 @@ def init_db():
                 profile_pic    TEXT DEFAULT NULL,
                 document_path  TEXT DEFAULT NULL,
                 booked_at      TEXT NOT NULL,
+                total_price    REAL DEFAULT 0,
+                booking_money  REAL DEFAULT 0,
+                due_amount     REAL DEFAULT 0,
                 FOREIGN KEY (apartment_id) REFERENCES apartments(id)
             )
         """)
+
+        try:
+            cursor.execute("ALTER TABLE customers ADD COLUMN total_price REAL DEFAULT 0")
+            cursor.execute("ALTER TABLE customers ADD COLUMN booking_money REAL DEFAULT 0")
+            cursor.execute("ALTER TABLE customers ADD COLUMN due_amount REAL DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass  # Columns already exist
 
         # Audit logs table
         cursor.execute("""
@@ -59,13 +68,11 @@ def init_db():
             )
         """)
 
-        # Seed apartments only if table is empty
-        existing = cursor.execute("SELECT COUNT(*) FROM apartments").fetchone()[0]
-        if existing == 0:
-            cursor.executemany(
-                "INSERT INTO apartments (id, status, booked_by) VALUES (?, ?, ?)",
-                APARTMENTS
-            )
+        # Seed apartments (ignores existing ones due to OR IGNORE)
+        cursor.executemany(
+            "INSERT OR IGNORE INTO apartments (id, status, booked_by) VALUES (?, ?, ?)",
+            APARTMENTS
+        )
 
         conn.commit()
 
@@ -86,10 +93,11 @@ def get_all_apartments():
         rows = conn.execute("""
             SELECT a.id, a.status, a.booked_by,
                    c.name, c.phone, c.address,
-                   c.profile_pic, c.document_path, c.booked_at
+                   c.profile_pic, c.document_path, c.booked_at,
+                   c.total_price, c.booking_money, c.due_amount
             FROM apartments a
             LEFT JOIN customers c ON c.apartment_id = a.id
-            ORDER BY a.id
+            ORDER BY CAST(SUBSTR(a.id, 2) AS INTEGER), SUBSTR(a.id, 1, 1)
         """).fetchall()
         return [dict(r) for r in rows]
 
@@ -100,7 +108,8 @@ def get_apartment(apt_id: str):
         row = conn.execute("""
             SELECT a.id, a.status, a.booked_by,
                    c.id as customer_id, c.name, c.phone, c.address,
-                   c.profile_pic, c.document_path, c.booked_at
+                   c.profile_pic, c.document_path, c.booked_at,
+                   c.total_price, c.booking_money, c.due_amount
             FROM apartments a
             LEFT JOIN customers c ON c.apartment_id = a.id
             WHERE a.id = ?
@@ -109,7 +118,8 @@ def get_apartment(apt_id: str):
 
 
 def book_apartment(apt_id: str, company: str, name: str, address: str,
-                   phone: str, profile_pic: str = None, document_path: str = None):
+                   phone: str, profile_pic: str = None, document_path: str = None,
+                   total_price: float = 0, booking_money: float = 0, due_amount: float = 0):
     """Book an apartment and create a customer record."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with get_db() as conn:
@@ -118,36 +128,37 @@ def book_apartment(apt_id: str, company: str, name: str, address: str,
             (company, apt_id)
         )
         conn.execute("""
-            INSERT INTO customers (apartment_id, name, address, phone, profile_pic, document_path, booked_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (apt_id, name, address, phone, profile_pic, document_path, now))
+            INSERT INTO customers (apartment_id, name, address, phone, profile_pic, document_path, booked_at, total_price, booking_money, due_amount)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (apt_id, name, address, phone, profile_pic, document_path, now, total_price, booking_money, due_amount))
         conn.commit()
 
 
 def edit_customer(apt_id: str, name: str, address: str, phone: str,
-                  profile_pic: str = None, document_path: str = None):
+                  profile_pic: str = None, document_path: str = None,
+                  total_price: float = 0, booking_money: float = 0, due_amount: float = 0):
     """Update existing customer record for an apartment."""
     with get_db() as conn:
         if profile_pic and document_path:
             conn.execute("""
-                UPDATE customers SET name=?, address=?, phone=?, profile_pic=?, document_path=?
+                UPDATE customers SET name=?, address=?, phone=?, profile_pic=?, document_path=?, total_price=?, booking_money=?, due_amount=?
                 WHERE apartment_id=?
-            """, (name, address, phone, profile_pic, document_path, apt_id))
+            """, (name, address, phone, profile_pic, document_path, total_price, booking_money, due_amount, apt_id))
         elif profile_pic:
             conn.execute("""
-                UPDATE customers SET name=?, address=?, phone=?, profile_pic=?
+                UPDATE customers SET name=?, address=?, phone=?, profile_pic=?, total_price=?, booking_money=?, due_amount=?
                 WHERE apartment_id=?
-            """, (name, address, phone, profile_pic, apt_id))
+            """, (name, address, phone, profile_pic, total_price, booking_money, due_amount, apt_id))
         elif document_path:
             conn.execute("""
-                UPDATE customers SET name=?, address=?, phone=?, document_path=?
+                UPDATE customers SET name=?, address=?, phone=?, document_path=?, total_price=?, booking_money=?, due_amount=?
                 WHERE apartment_id=?
-            """, (name, address, phone, document_path, apt_id))
+            """, (name, address, phone, document_path, total_price, booking_money, due_amount, apt_id))
         else:
             conn.execute("""
-                UPDATE customers SET name=?, address=?, phone=?
+                UPDATE customers SET name=?, address=?, phone=?, total_price=?, booking_money=?, due_amount=?
                 WHERE apartment_id=?
-            """, (name, address, phone, apt_id))
+            """, (name, address, phone, total_price, booking_money, due_amount, apt_id))
         conn.commit()
 
 

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice - Apartment {{ apartment.id }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .report-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    /* ── Header ───────────────────────────────────────────── */
+    .report-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f172a 100%);
+      color: #fff;
+      padding: 2.5rem 2.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-header::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(240,180,41,0.18) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .report-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .report-logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #f0b429, #e07b00);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .report-company-main {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #f0b429;
+    }
+
+    .report-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.3rem;
+    }
+    .report-title span { color: #f0b429; }
+
+    .report-meta {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.55);
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+
+    /* ── Content ──────────────────────────────────────────── */
+    .report-body {
+      padding: 2.5rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      padding: 1.2rem;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+
+    .info-value {
+      font-size: 1rem;
+      color: #0f172a;
+      font-weight: 500;
+    }
+
+    /* ── Financial ────────────────────────────────────────── */
+    .financial-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .financial-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .financial-row:last-child {
+      border-bottom: none;
+    }
+    .financial-row.total-row {
+      background: #f0f4f8;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .financial-row.due-row {
+      background: #fffbeb;
+      color: #b45309;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .financial-label { color: #475569; }
+    .financial-value { color: #0f172a; font-family: monospace; font-size: 1.1rem; }
+    .due-row .financial-label, .due-row .financial-value { color: #b45309; }
+
+    /* ── Actions bar ──────────────────────────────────────── */
+    .report-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-bottom: 1.5rem;
+      max-width: 800px;
+      margin: 0 auto 1.5rem auto;
+    }
+    .btn-report {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-print {
+      background: linear-gradient(135deg, #f0b429, #e07b00);
+      color: #000;
+      box-shadow: 0 3px 12px rgba(240,180,41,0.3);
+    }
+    .btn-print:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-close {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .btn-close:hover { background: #e2e8f0; }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    .report-footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      padding: 1.5rem 0;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    @page { size: A4; margin: 10mm; }
+    @media print {
+      body { background: #fff; padding: 0; font-size: 0.8rem; }
+      .report-actions { display: none; }
+      .report-wrapper { box-shadow: none; max-width: 100%; border-radius: 0; }
+      .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0; padding: 1rem; margin-bottom: 0.5rem; }
+      .report-logo-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+      .report-company-main { font-size: 1rem; }
+      .report-title { font-size: 1.4rem; margin-bottom: 0.2rem; }
+      .report-meta { gap: 1rem; font-size: 0.75rem; margin-top: 0.4rem; }
+      .report-logo { margin-bottom: 0.8rem; }
+      
+      .report-body { padding: 1rem; }
+      .section-title { font-size: 0.9rem; margin-bottom: 0.5rem !important; padding-bottom: 0.2rem; gap: 0.3rem; }
+      .info-grid { gap: 0.5rem; margin-bottom: 1rem !important; }
+      .info-box { padding: 0.5rem 0.8rem; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .info-label { font-size: 0.65rem; margin-bottom: 0.1rem; }
+      .info-value { font-size: 0.85rem; }
+      
+      .financial-box { margin-bottom: 1rem; border-radius: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .financial-row { padding: 0.5rem 1rem; }
+      .financial-row.total-row { font-size: 0.9rem; }
+      .financial-row.due-row { font-size: 1rem; }
+      .financial-value { font-size: 0.95rem; }
+      
+      .signature-block { margin-top: 3.5rem !important; margin-bottom: 0.5rem !important; }
+      .thank-you-note { margin-top: 0.5rem !important; font-size: 0.75rem; }
+      .report-footer { padding: 0.5rem 0; font-size: 0.65rem; margin-top: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Action buttons -->
+<div class="report-actions">
+  <button onclick="window.close()" class="btn-report btn-close">
+    &#10005; Close
+  </button>
+  <button onclick="window.print()" class="btn-report btn-print">
+    &#128438; Print Invoice
+  </button>
+</div>
+
+<div class="report-wrapper">
+  
+  <!-- Header -->
+  <div class="report-header">
+    <div class="report-logo">
+      <div class="report-logo-icon">&#127968;</div>
+      <div class="report-company">
+        <div class="report-company-main">Nextgen Luxury Tower</div>
+        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 0.2rem;">
+          Developed by NextGen Design & Developers Ltd and Luxury Construction
+        </div>
+      </div>
+    </div>
+    <h1 class="report-title">Booking <span>Invoice</span></h1>
+    <div class="report-meta">
+      <span>&#128197; Generated: {{ generated_at }}</span>
+      <span>&#128203; Booking Date: {{ apartment.booked_at[:10] }}</span>
+      <span>&#127970; Booked By: {{ COMPANY_DISPLAY.get(apartment.booked_by, apartment.booked_by) }}</span>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="report-body">
+    
+    <div class="section-title">
+      <span style="font-size:1.3rem;">&#127968;</span> Apartment Details
+    </div>
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="info-label">Unit Number</div>
+        <div class="info-value" style="font-size:1.4rem; font-weight:800;">{{ apartment.id }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Location / Direction</div>
+        {% set series_dir = {'A': 'North East', 'B': 'North Middle', 'C': 'North West', 'D': 'South West', 'E': 'South Middle', 'F': 'South East'} %}
+        <div class="info-value">Floor {{ apartment.id[1:] }} &bull; Unit {{ apartment.id[0] }}<br><span style="color:#64748b; font-size:0.9rem;">{{ series_dir.get(apartment.id[0], '') }}</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span style="font-size:1.3rem;">&#128100;</span> Tenant Information
+    </div>
+    <div class="info-grid" style="margin-bottom: 2.5rem;">
+      <div class="info-box">
+        <div class="info-label">Full Name</div>
+        <div class="info-value">{{ apartment.name }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Phone Number</div>
+        <div class="info-value">{{ apartment.phone }}</div>
+      </div>
+      <div class="info-box" style="grid-column: span 2;">
+        <div class="info-label">Address</div>
+        <div class="info-value">{{ apartment.address }}</div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span style="font-size:1.3rem;">&#128181;</span> Financial Summary
+    </div>
+    <div class="financial-box">
+      <div class="financial-row total-row">
+        <div class="financial-label">Total Price</div>
+        <div class="financial-value">BDT {{ "{:,.2f}".format(apartment.total_price|default(0, true)|float) }}</div>
+      </div>
+      <div class="financial-row">
+        <div class="financial-label">Booking Money (Paid)</div>
+        <div class="financial-value" style="color:#16a34a;">-BDT {{ "{:,.2f}".format(apartment.booking_money|default(0, true)|float) }}</div>
+      </div>
+      <div class="financial-row due-row">
+        <div class="financial-label">Due Amount</div>
+        <div class="financial-value">BDT {{ "{:,.2f}".format(apartment.due_amount|default(0, true)|float) }}</div>
+      </div>
+    </div>
+
+    <div class="signature-block" style="margin-top: 4rem; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 1rem; margin-bottom: 2rem;">
+      <div style="text-align: center; border-top: 1px solid #94a3b8; padding-top: 0.5rem; width: 200px; font-weight: 600; color: #475569; font-size: 0.9rem;">
+        Deposited By
+      </div>
+      <div style="text-align: center; border-top: 1px solid #94a3b8; padding-top: 0.5rem; width: 200px; font-weight: 600; color: #475569; font-size: 0.9rem;">
+        Authorized By
+      </div>
+    </div>
+
+    <div class="thank-you-note" style="margin-top: 2rem; text-align: center; color: #64748b; font-size: 0.9rem; font-style: italic;">
+      Thank you for choosing Nextgen Luxury Tower.<br>
+      For any inquiries, please contact our support team.
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="report-footer">
+    &copy; {{ generated_at.split(',')[0].split(' ')[-1] }} Nextgen Luxury Tower — Confidential
+  </div>
+
+</div>
+
+</body>
+</html>

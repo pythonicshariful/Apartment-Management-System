@@ -108,13 +108,16 @@ function closeBookingModal() {
 
 
 // ── Edit Modal ───────────────────────────────────────────────────────────────
-function openEditModal(aptId, name, address, phone) {
+function openEditModal(aptId, name, address, phone, total_price, booking_money, due_amount) {
   const form = document.getElementById('editForm');
   form.action = '/edit/' + aptId;
   document.getElementById('editAptId').textContent  = aptId;
   document.getElementById('edit_name').value        = name    || '';
   document.getElementById('edit_address').value     = address || '';
   document.getElementById('edit_phone').value       = phone   || '';
+  document.getElementById('edit_total_price').value = total_price || 0;
+  document.getElementById('edit_booking_money').value = booking_money || 0;
+  document.getElementById('edit_due_amount').value = due_amount || 0;
   resetFileArea('editPicPreview', 'editPicPlaceholder');
   resetFileArea('editDocPreview', 'editDocPlaceholder');
   showModal('editOverlay');
@@ -155,12 +158,24 @@ function openProfileModal(aptId) {
       document.getElementById('profilePhone').textContent   = data.phone   || '—';
       document.getElementById('profileAddress').textContent = data.address || '—';
       document.getElementById('profileBookedAt').textContent= data.booked_at || '—';
+      
+      const totalPriceEl = document.getElementById('profileTotalPrice');
+      if (totalPriceEl) totalPriceEl.textContent = 'BDT ' + (data.total_price || 0);
+      
+      const bookingMoneyEl = document.getElementById('profileBookingMoney');
+      if (bookingMoneyEl) bookingMoneyEl.textContent = 'BDT ' + (data.booking_money || 0);
+      
+      const dueAmountEl = document.getElementById('profileDueAmount');
+      if (dueAmountEl) dueAmountEl.textContent = 'BDT ' + (data.due_amount || 0);
+      
+      const invoiceBtn = document.getElementById('profileInvoiceBtn');
+      if (invoiceBtn) invoiceBtn.href = '/report/' + aptId;
 
       const badge = document.getElementById('profileCompanyBadge');
       if (data.booked_by === 'nextgen') {
-        badge.innerHTML = '<span class="tag-nextgen"><i class="bi bi-building me-1"></i>NextGen Design & Developers</span>';
+        badge.innerHTML = `<span class="tag-nextgen"><i class="bi bi-building-fill me-1"></i>${data.company_display || data.booked_by}</span>`;
       } else if (data.booked_by === 'luxury') {
-        badge.innerHTML = '<span class="tag-luxury"><i class="bi bi-gem me-1"></i>Luxury Construction</span>';
+        badge.innerHTML = `<span class="tag-luxury"><i class="bi bi-gem me-1"></i>${data.company_display || data.booked_by}</span>`;
       } else {
         badge.innerHTML = '';
       }

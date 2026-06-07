@@ -88,6 +88,31 @@
               </div>
             </div>
           </div>
+
+          <!-- Pricing -->
+          <div class="col-12 col-md-4">
+            <label for="book_total_price" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-cash me-1 text-gold"></i>Total Price
+            </label>
+            <input type="number" step="0.01" class="form-control form-control-glass"
+                   id="book_total_price" name="total_price" value="0" min="0" required
+                   oninput="calcDue('book')" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="book_booking_money" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-wallet2 me-1 text-gold"></i>Booking Money
+            </label>
+            <input type="number" step="0.01" class="form-control form-control-glass"
+                   id="book_booking_money" name="booking_money" value="0" min="0" required
+                   oninput="calcDue('book')" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="book_due_amount" class="form-label fw-semibold small text-light-muted">
+              <i class="bi bi-exclamation-circle me-1 text-gold"></i>Due Amount
+            </label>
+            <input type="number" step="0.01" class="form-control form-control-glass text-warning fw-bold"
+                   id="book_due_amount" name="due_amount" value="0" readonly />
+          </div>
         </div>
       </div>
 
@@ -103,3 +128,12 @@
 
   </div>
 </div>
+
+<script>
+function calcDue(prefix) {
+  const total = parseFloat(document.getElementById(prefix + '_total_price').value) || 0;
+  const booked = parseFloat(document.getElementById(prefix + '_booking_money').value) || 0;
+  const due = total - booked;
+  document.getElementById(prefix + '_due_amount').value = due < 0 ? 0 : due;
+}
+</script>

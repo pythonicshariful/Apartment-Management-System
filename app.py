@@ -38,7 +38,7 @@ CREDENTIALS = {
 }
 
 COMPANY_DISPLAY = {
-    "nextgen": "NextGen Design and Developers Ltd.",
+    "nextgen": "NextGen Design & Developers Ltd",
     "luxury":  "Luxury Construction",
 }
 
@@ -176,9 +176,12 @@ def book(apt_id):
         flash(f"Apartment {apt_id} is already booked.", "danger")
         return redirect(url_for("dashboard"))
 
-    name    = request.form.get("name", "").strip()
-    address = request.form.get("address", "").strip()
-    phone   = request.form.get("phone", "").strip()
+    name          = request.form.get("name", "").strip()
+    address       = request.form.get("address", "").strip()
+    phone         = request.form.get("phone", "").strip()
+    total_price   = float(request.form.get("total_price") or 0)
+    booking_money = float(request.form.get("booking_money") or 0)
+    due_amount    = float(request.form.get("due_amount") or 0)
 
     if not all([name, address, phone]):
         flash("All customer fields are required.", "danger")
@@ -202,7 +205,7 @@ def book(apt_id):
             return redirect(url_for("dashboard"))
         document_path = save_upload(doc_file, "documents")
 
-    db.book_apartment(apt_id, role, name, address, phone, profile_pic, document_path)
+    db.book_apartment(apt_id, role, name, address, phone, profile_pic, document_path, total_price, booking_money, due_amount)
     db.log_audit("BOOK", role,
                  f"Apartment {apt_id} booked by {COMPANY_DISPLAY[role]} for customer '{name}'.")
 
@@ -235,9 +238,12 @@ def edit(apt_id):
         flash("You are not authorized to edit this booking.", "danger")
         return redirect(url_for("dashboard"))
 
-    name    = request.form.get("name", "").strip()
-    address = request.form.get("address", "").strip()
-    phone   = request.form.get("phone", "").strip()
+    name          = request.form.get("name", "").strip()
+    address       = request.form.get("address", "").strip()
+    phone         = request.form.get("phone", "").strip()
+    total_price   = float(request.form.get("total_price") or 0)
+    booking_money = float(request.form.get("booking_money") or 0)
+    due_amount    = float(request.form.get("due_amount") or 0)
 
     if not all([name, address, phone]):
         flash("All customer fields are required.", "danger")
@@ -260,7 +266,7 @@ def edit(apt_id):
             return redirect(url_for("dashboard"))
         document_path = save_upload(doc_file, "documents")
 
-    db.edit_customer(apt_id, name, address, phone, profile_pic, document_path)
+    db.edit_customer(apt_id, name, address, phone, profile_pic, document_path, total_price, booking_money, due_amount)
     db.log_audit("EDIT", role,
                  f"Customer details updated for Apartment {apt_id} by {COMPANY_DISPLAY.get(role, role)}.")
 
@@ -322,8 +328,24 @@ def profile(apt_id):
         "document":     apartment.get("document_path"),
         "booked_by":    apartment.get("booked_by"),
         "booked_at":    apartment.get("booked_at"),
+        "total_price":  apartment.get("total_price", 0),
+        "booking_money": apartment.get("booking_money", 0),
+        "due_amount":   apartment.get("due_amount", 0),
         "company_display": COMPANY_DISPLAY.get(apartment.get("booked_by"), ""),
     })
+
+
+@app.route("/report/<apt_id>")
+@login_required
+def individual_report(apt_id):
+    apartment = db.get_apartment(apt_id)
+    if not apartment or apartment["status"] != "Booked":
+        flash("No active booking found for this apartment.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    from datetime import datetime
+    generated_at = datetime.now().strftime("%d %B %Y, %I:%M %p")
+    return render_template("individual_report.html", apartment=apartment, generated_at=generated_at, COMPANY_DISPLAY=COMPANY_DISPLAY)
 
 
 # ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-<div class="col-12 col-sm-6 col-xl-3">
+<div class="col-12 col-md-6 col-lg-4 col-xl-2">
   <div class="apt-card glass-card {{ 'apt-booked' if is_booked else 'apt-available' }} animate-fade-in"
        id="card-{{ apt.id }}">
 
@@ -7,7 +7,10 @@
       <div>
         <div class="apt-id">{{ apt.id }}</div>
         <div class="apt-floor text-muted small">
-          Floor {{ apt.id[0] }} &bull; Unit {{ apt.id[1] }}
+          Floor {{ apt.id[1:] }} &bull; Unit {{ apt.id[0] }}
+          <br>
+          {% set series_dir = {'A': 'North East', 'B': 'North Middle', 'C': 'North West', 'D': 'South West', 'E': 'South Middle', 'F': 'South East'} %}
+          <i class="bi bi-compass ms-1 text-gold"></i> {{ series_dir.get(apt.id[0], '') }}
         </div>
       </div>
       <span class="apt-badge {% if is_booked %}badge-booked{% else %}badge-available{% endif %}">
@@ -42,11 +45,11 @@
             <div class="company-tag mt-1">
               {% if apt.booked_by == 'nextgen' %}
                 <span class="tag-nextgen">
-                  <i class="bi bi-building me-1"></i>NextGen
+                  <i class="bi bi-building-fill me-1"></i>{{ COMPANY_DISPLAY.get(apt.booked_by, apt.booked_by) }}
                 </span>
               {% elif apt.booked_by == 'luxury' %}
                 <span class="tag-luxury">
-                  <i class="bi bi-gem me-1"></i>Luxury
+                  <i class="bi bi-gem me-1"></i>{{ COMPANY_DISPLAY.get(apt.booked_by, apt.booked_by) }}
                 </span>
               {% endif %}
             </div>
@@ -95,7 +98,7 @@
       <!-- Edit Details — only for owner company or admin -->
       <button type="button"
               class="btn btn-warning btn-sm fw-semibold"
-              onclick="openEditModal('{{ apt.id }}', '{{ apt.name }}', '{{ apt.address }}', '{{ apt.phone }}')"
+              onclick="openEditModal('{{ apt.id }}', '{{ apt.name }}', '{{ apt.address }}', '{{ apt.phone }}', {{ apt.total_price|default(0) }}, {{ apt.booking_money|default(0) }}, {{ apt.due_amount|default(0) }})"
               id="btn-edit-{{ apt.id }}">
         <i class="bi bi-pencil-fill me-1"></i>Edit Details
       </button>
