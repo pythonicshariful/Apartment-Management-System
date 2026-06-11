@@ -43,6 +43,41 @@ COMPANY_DISPLAY = {
 }
 
 # ---------------------------------------------------------------------------
+# Floor-based booking permission rules
+# ---------------------------------------------------------------------------
+# Floor 1 & 14  → both companies can book
+# Even floors (2,4,6,8,10,12) → Luxury only (Nextgen can view, not book)
+# Odd floors (3,5,7,9,11,13)  → Nextgen only (Luxury can view, not book)
+
+def get_floor(apt_id: str) -> int:
+    """Extract the floor number from an apartment ID like 'A7' → 7."""
+    try:
+        return int(apt_id[1:])
+    except (ValueError, IndexError):
+        return 0
+
+
+def can_book_apartment(apt_id: str, role: str) -> bool:
+    """Return True if *role* is allowed to BOOK the given apartment."""
+    floor = get_floor(apt_id)
+    if floor in (1, 14):
+        return True                       # both companies
+    if floor % 2 == 0:                    # even → Luxury only
+        return role == "luxury"
+    else:                                 # odd  → Nextgen only
+        return role == "nextgen"
+
+
+def floor_restriction_label(apt_id: str) -> str:
+    """Return a short human-readable restriction label for the UI."""
+    floor = get_floor(apt_id)
+    if floor in (1, 14):
+        return "Open"
+    if floor % 2 == 0:
+        return "Luxury Only"
+    return "NextGen Only"
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -97,10 +132,23 @@ def operator_required(f):
 
 @app.context_processor
 def inject_globals():
+    role = session.get("role")
+
+    def _can_book_floor(apt_id):
+        """Template helper: can current role book this apartment?"""
+        if not role:
+            return False
+        return can_book_apartment(apt_id, role)
+
+    def _floor_label(apt_id):
+        return floor_restriction_label(apt_id)
+
     return {
-        "COMPANY_DISPLAY": COMPANY_DISPLAY,
-        "current_role":    session.get("role"),
-        "current_company": session.get("role"),
+        "COMPANY_DISPLAY":      COMPANY_DISPLAY,
+        "current_role":         role,
+        "current_company":      role,
+        "can_book_floor":       _can_book_floor,
+        "floor_label":          _floor_label,
     }
 
 
@@ -174,6 +222,17 @@ def book(apt_id):
 
     if apartment["status"] == "Booked":
         flash(f"Apartment {apt_id} is already booked.", "danger")
+        return redirect(url_for("dashboard"))
+
+    # Floor-based permission check
+    if not can_book_apartment(apt_id, role):
+        floor = get_floor(apt_id)
+        label = floor_restriction_label(apt_id)
+        flash(
+            f"Floor {floor} is restricted to {label}. "
+            f"{COMPANY_DISPLAY[role]} cannot book this apartment.",
+            "danger"
+        )
         return redirect(url_for("dashboard"))
 
     name          = request.form.get("name", "").strip()

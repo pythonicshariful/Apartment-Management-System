@@ -92,7 +92,8 @@
     {% for apt in apartments %}
     {% set is_booked   = apt.status == 'Booked' %}
     {% set is_owner    = current_role == 'admin' or (current_role == apt.booked_by) %}
-    {% set can_book    = not is_booked and current_role in ('nextgen', 'luxury') %}
+    {% set can_book    = not is_booked and can_book_floor(apt.id) %}
+    {% set apt_floor_label = floor_label(apt.id) %}
     {% include "partials/apartment_card.html" %}
     {% endfor %}
   </div>
