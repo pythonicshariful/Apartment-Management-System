@@ -37,29 +37,7 @@
     <!-- Login Form -->
     <form method="POST" action="{{ url_for('login') }}" id="loginForm">
 
-      <!-- Role selector -->
-      <div class="mb-4">
-        <label class="form-label fw-semibold text-light-muted mb-2">
-          <i class="bi bi-person-badge me-1"></i>Select Role
-        </label>
-        <div class="role-selector d-flex gap-2">
 
-          <input type="radio" class="btn-check" name="role" id="role-nextgen"
-                 value="nextgen" autocomplete="off" checked />
-          <label class="btn role-btn flex-fill" for="role-nextgen">
-            <i class="bi bi-building d-block mb-1 fs-5"></i>
-            <small>NextGen Design & Developers Ltd</small>
-          </label>
-
-          <input type="radio" class="btn-check" name="role" id="role-luxury"
-                 value="luxury" autocomplete="off" />
-          <label class="btn role-btn flex-fill" for="role-luxury">
-            <i class="bi bi-gem d-block mb-1 fs-5"></i>
-            <small>Luxury Construction</small>
-          </label>
-
-        </div>
-      </div>
 
       <!-- Password -->
       <div class="mb-4">

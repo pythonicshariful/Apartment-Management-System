@@ -33,13 +33,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # Credentials loaded from .env
 CREDENTIALS = {
-    "nextgen": os.getenv("NEXTGEN_PASSWORD", "NextGen@2024"),
-    "luxury":  os.getenv("LUXURY_PASSWORD",  "Luxury@2024"),
-}
-
-COMPANY_DISPLAY = {
-    "nextgen": "NextGen Design & Developers Ltd",
-    "luxury":  "Luxury Construction",
+    "admin": os.getenv("ADMIN_PASSWORD", "Admin@2024")
 }
 
 # ---------------------------------------------------------------------------
@@ -58,24 +52,13 @@ def get_floor(apt_id: str) -> int:
 
 
 def can_book_apartment(apt_id: str, role: str) -> bool:
-    """Return True if *role* is allowed to BOOK the given apartment."""
-    floor = get_floor(apt_id)
-    if floor in (1, 14):
-        return True                       # both companies
-    if floor % 2 == 0:                    # even → Luxury only
-        return role == "luxury"
-    else:                                 # odd  → Nextgen only
-        return role == "nextgen"
+    """Return True as all admin roles can book any apartment."""
+    return True
 
 
 def floor_restriction_label(apt_id: str) -> str:
     """Return a short human-readable restriction label for the UI."""
-    floor = get_floor(apt_id)
-    if floor in (1, 14):
-        return "Open"
-    if floor % 2 == 0:
-        return "Luxury Only"
-    return "NextGen Only"
+    return "Open"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -116,11 +99,11 @@ def login_required(f):
 
 
 def operator_required(f):
-    """Allow only nextgen / luxury operators."""
+    """Allow only admin operators."""
     @wraps(f)
     def decorated(*args, **kwargs):
-        if session.get("role") not in ("nextgen", "luxury"):
-            flash("Operator access required.", "danger")
+        if session.get("role") != "admin":
+            flash("Admin access required.", "danger")
             return redirect(url_for("dashboard"))
         return f(*args, **kwargs)
     return decorated
@@ -144,9 +127,7 @@ def inject_globals():
         return floor_restriction_label(apt_id)
 
     return {
-        "COMPANY_DISPLAY":      COMPANY_DISPLAY,
         "current_role":         role,
-        "current_company":      role,
         "can_book_floor":       _can_book_floor,
         "floor_label":          _floor_label,
     }
@@ -162,14 +143,13 @@ def login():
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
-        role     = request.form.get("role", "").strip().lower()
         password = request.form.get("password", "").strip()
 
-        if role in CREDENTIALS and CREDENTIALS[role] == password:
-            session["role"]    = role
+        if password == CREDENTIALS["admin"]:
+            session["role"]    = "admin"
             session.permanent  = True
-            flash(f"Welcome, {COMPANY_DISPLAY.get(role, role)}!", "success")
-            db.log_audit("LOGIN", role, f"{COMPANY_DISPLAY.get(role, role)} logged in.")
+            flash("Welcome, Admin!", "success")
+            db.log_audit("LOGIN", "admin", "Admin logged in.")
             return redirect(url_for("dashboard"))
         else:
             flash("Invalid credentials. Please try again.", "danger")
@@ -181,7 +161,7 @@ def login():
 @login_required
 def logout():
     role = session.get("role", "unknown")
-    db.log_audit("LOGOUT", role, f"{COMPANY_DISPLAY.get(role, role)} logged out.")
+    db.log_audit("LOGOUT", role, "Admin logged out.")
     session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for("login"))
@@ -226,13 +206,7 @@ def book(apt_id):
 
     # Floor-based permission check
     if not can_book_apartment(apt_id, role):
-        floor = get_floor(apt_id)
-        label = floor_restriction_label(apt_id)
-        flash(
-            f"Floor {floor} is restricted to {label}. "
-            f"{COMPANY_DISPLAY[role]} cannot book this apartment.",
-            "danger"
-        )
+        flash("You cannot book this apartment.", "danger")
         return redirect(url_for("dashboard"))
 
     name          = request.form.get("name", "").strip()
@@ -270,9 +244,9 @@ def book(apt_id):
 
     db.book_apartment(apt_id, role, name, address, phone, profile_pic, document_path, total_price, booking_money, due_amount)
     db.log_audit("BOOK", role,
-                 f"Apartment {apt_id} booked by {COMPANY_DISPLAY[role]} for customer '{name}'.")
+                 f"Apartment {apt_id} booked for customer '{name}'.")
 
-    send_backup_to_telegram(action=f"BOOK {apt_id}", performed_by=COMPANY_DISPLAY[role])
+    send_backup_to_telegram(action=f"BOOK {apt_id}", performed_by="Admin")
     flash(f"Apartment {apt_id} successfully booked for {name}!", "success")
     return redirect(url_for("dashboard"))
 
@@ -297,7 +271,7 @@ def edit(apt_id):
         return redirect(url_for("dashboard"))
 
     # RBAC: only the booking company can edit
-    if apartment["booked_by"] != role:
+    if apartment["booked_by"] != role and apartment["booked_by"] not in ["nextgen", "luxury", "admin"]:
         flash("You are not authorized to edit this booking.", "danger")
         return redirect(url_for("dashboard"))
 
@@ -349,9 +323,9 @@ def edit(apt_id):
 
     db.edit_customer(apt_id, name, address, phone, profile_pic, document_path, total_price, booking_money, due_amount)
     db.log_audit("EDIT", role,
-                 f"Customer details updated for Apartment {apt_id} by {COMPANY_DISPLAY.get(role, role)}.")
+                 f"Customer details updated for Apartment {apt_id}.")
 
-    send_backup_to_telegram(action=f"EDIT {apt_id}", performed_by=COMPANY_DISPLAY.get(role, role))
+    send_backup_to_telegram(action=f"EDIT {apt_id}", performed_by="Admin")
     flash(f"Booking details for Apartment {apt_id} updated successfully.", "success")
     return redirect(url_for("dashboard"))
 
@@ -376,16 +350,16 @@ def cancel(apt_id):
         return redirect(url_for("dashboard"))
 
     # RBAC: only the booking company can cancel
-    if apartment["booked_by"] != role:
+    if apartment["booked_by"] != role and apartment["booked_by"] not in ["nextgen", "luxury", "admin"]:
         flash("You are not authorized to cancel this booking.", "danger")
         return redirect(url_for("dashboard"))
 
     customer_name = apartment.get("name", "Unknown")
     db.cancel_booking(apt_id)
     db.log_audit("CANCEL", role,
-                 f"Booking cancelled for Apartment {apt_id} (was '{customer_name}') by {COMPANY_DISPLAY.get(role, role)}.")
+                 f"Booking cancelled for Apartment {apt_id} (was '{customer_name}').")
 
-    send_backup_to_telegram(action=f"CANCEL {apt_id}", performed_by=COMPANY_DISPLAY.get(role, role))
+    send_backup_to_telegram(action=f"CANCEL {apt_id}", performed_by="Admin")
     flash(f"Booking for Apartment {apt_id} has been cancelled.", "success")
     return redirect(url_for("dashboard"))
 
@@ -422,7 +396,6 @@ def profile(apt_id):
         "total_price":  apartment.get("total_price", 0),
         "booking_money": apartment.get("booking_money", 0),
         "due_amount":   apartment.get("due_amount", 0),
-        "company_display": COMPANY_DISPLAY.get(apartment.get("booked_by"), ""),
     })
 
 
@@ -436,7 +409,7 @@ def individual_report(apt_id):
     
     from datetime import datetime
     generated_at = datetime.now().strftime("%d %B %Y, %I:%M %p")
-    return render_template("individual_report.html", apartment=apartment, generated_at=generated_at, COMPANY_DISPLAY=COMPANY_DISPLAY)
+    return render_template("individual_report.html", apartment=apartment, generated_at=generated_at)
 
 
 # ---------------------------------------------------------------------------
@@ -469,7 +442,7 @@ def report_csv():
         writer.writerow([
             apt["id"],
             apt["status"],
-            COMPANY_DISPLAY.get(apt["booked_by"], "") if apt["booked_by"] else "",
+            "Admin",
             apt.get("name")    or "",
             apt.get("phone")   or "",
             apt.get("address") or "",

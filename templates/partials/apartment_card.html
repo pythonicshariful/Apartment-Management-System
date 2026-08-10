@@ -20,14 +20,7 @@
             <i class="bi bi-check-circle-fill me-1"></i>Available
           {% endif %}
         </span>
-        {# Floor restriction badge #}
-        {% if apt_floor_label == 'Luxury Only' %}
-          <span class="floor-badge floor-badge-luxury"><i class="bi bi-gem me-1"></i>Luxury Only</span>
-        {% elif apt_floor_label == 'NextGen Only' %}
-          <span class="floor-badge floor-badge-nextgen"><i class="bi bi-building-fill me-1"></i>NextGen Only</span>
-        {% else %}
-          <span class="floor-badge floor-badge-open"><i class="bi bi-unlock-fill me-1"></i>Open</span>
-        {% endif %}
+
       </div>
     </div>
 
@@ -51,17 +44,7 @@
             <div class="tenant-phone text-muted small">
               <i class="bi bi-telephone-fill me-1"></i>{{ apt.phone }}
             </div>
-            <div class="company-tag mt-1">
-              {% if apt.booked_by == 'nextgen' %}
-                <span class="tag-nextgen">
-                  <i class="bi bi-building-fill me-1"></i>{{ COMPANY_DISPLAY.get(apt.booked_by, apt.booked_by) }}
-                </span>
-              {% elif apt.booked_by == 'luxury' %}
-                <span class="tag-luxury">
-                  <i class="bi bi-gem me-1"></i>{{ COMPANY_DISPLAY.get(apt.booked_by, apt.booked_by) }}
-                </span>
-              {% endif %}
-            </div>
+
           </div>
         </div>
         {% if apt.booked_at %}
@@ -94,18 +77,7 @@
       </button>
       {% endif %}
 
-      {# View-only notice for restricted available floors #}
-      {% if not is_booked and not can_book and current_role in ('nextgen', 'luxury') %}
-        {% if apt_floor_label == 'Luxury Only' %}
-        <div class="floor-restricted-notice floor-restricted-luxury">
-          <i class="bi bi-gem me-1"></i>Luxury Exclusive Floor
-        </div>
-        {% elif apt_floor_label == 'NextGen Only' %}
-        <div class="floor-restricted-notice floor-restricted-nextgen">
-          <i class="bi bi-building-fill me-1"></i>NextGen Exclusive Floor
-        </div>
-        {% endif %}
-      {% endif %}
+
 
       {% if is_booked %}
       <!-- View Profile (always visible to logged-in users) -->
@@ -135,11 +107,7 @@
       {% endif %}
       {% endif %}
 
-      {% if not is_booked and not can_book and current_role not in ('nextgen', 'luxury') %}
-      <div class="text-center text-muted small py-1">
-        <i class="bi bi-eye me-1"></i>View Only
-      </div>
-      {% endif %}
+
 
     </div>
 

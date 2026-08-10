@@ -116,16 +116,10 @@
                 <span class="text-warning">
                   <i class="bi bi-shield-fill-check me-1"></i>Administrator
                 </span>
-              {% elif log.performed_by == 'nextgen' %}
-                <span class="text-info">
-                  <i class="bi bi-building me-1"></i>Nextgen Luxury Tower
-                </span>
-              {% elif log.performed_by == 'luxury' %}
-                <span class="text-purple">
-                  <i class="bi bi-gem me-1"></i>Nextgen Luxury Tower
-                </span>
               {% else %}
-                {{ log.performed_by }}
+                <span class="text-muted">
+                  <i class="bi bi-person me-1"></i>{{ log.performed_by|capitalize }}
+                </span>
               {% endif %}
             </td>
             <td class="text-muted small">{{ log.details }}</td>

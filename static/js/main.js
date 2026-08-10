@@ -172,13 +172,7 @@ function openProfileModal(aptId) {
       if (invoiceBtn) invoiceBtn.href = '/report/' + aptId;
 
       const badge = document.getElementById('profileCompanyBadge');
-      if (data.booked_by === 'nextgen') {
-        badge.innerHTML = `<span class="tag-nextgen"><i class="bi bi-building-fill me-1"></i>${data.company_display || data.booked_by}</span>`;
-      } else if (data.booked_by === 'luxury') {
-        badge.innerHTML = `<span class="tag-luxury"><i class="bi bi-gem me-1"></i>${data.company_display || data.booked_by}</span>`;
-      } else {
-        badge.innerHTML = '';
-      }
+      if (badge) badge.innerHTML = '';
 
       const picImg     = document.getElementById('profilePicImg');
       const picDefault = document.getElementById('profilePicDefault');

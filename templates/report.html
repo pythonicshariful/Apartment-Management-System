@@ -348,7 +348,7 @@
         <tr>
           <th>Unit</th>
           <th>Status</th>
-          <th>Booked By</th>
+
           <th>Tenant Name &amp; Phone</th>
           <th>Address</th>
           <th>Since</th>
@@ -375,14 +375,7 @@
             {% endif %}
           </td>
 
-          <!-- Company -->
-          <td>
-            {% if is_booked %}
-              <span class="company-badge company-{{ 'nextgen' if apt.booked_by == 'nextgen' else 'luxury' }}">&#127970; {{ COMPANY_DISPLAY.get(apt.booked_by, apt.booked_by) }}</span>
-            {% else %}
-              <span style="color:#94a3b8;font-size:0.8rem;">—</span>
-            {% endif %}
-          </td>
+
 
           <!-- Tenant -->
           <td>
