@@ -178,6 +178,12 @@ def dashboard():
     return render_template("dashboard.html", apartments=apartments)
 
 
+@app.route("/public")
+def public_dashboard():
+    apartments = db.get_all_apartments()
+    return render_template("public_dashboard.html", apartments=apartments)
+
+
 @app.route("/api/apartments")
 @login_required
 def api_apartments():
@@ -369,7 +375,6 @@ def cancel(apt_id):
 # ---------------------------------------------------------------------------
 
 @app.route("/profile/<apt_id>")
-@login_required
 def profile(apt_id):
     apartment = db.get_apartment(apt_id)
     if not apartment or apartment["status"] != "Booked":
