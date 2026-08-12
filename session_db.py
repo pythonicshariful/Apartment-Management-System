@@ -52,3 +52,6 @@ def update_session_activity(session_id: str):
     with get_session_db() as conn:
         conn.execute("UPDATE sessions SET last_active_at = ? WHERE session_id = ?", (now, session_id))
         conn.commit()
+
+# Initialize the database table when the module is imported
+init_session_db()
