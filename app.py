@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 import database as db
+import session_db
 from telegram_backup import send_backup_to_telegram
 
 # ---------------------------------------------------------------------------
@@ -91,9 +92,19 @@ def save_upload(file, subfolder=""):
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if "role" not in session:
+        if "role" not in session or "session_id" not in session:
+            session.clear()
             flash("Please log in to continue.", "warning")
             return redirect(url_for("login"))
+            
+        session_id = session.get("session_id")
+        active_session = session_db.get_session(session_id)
+        if not active_session:
+            session.clear()
+            flash("Your session was terminated. Please log in again.", "danger")
+            return redirect(url_for("login"))
+            
+        session_db.update_session_activity(session_id)
         return f(*args, **kwargs)
     return decorated
 
@@ -139,15 +150,22 @@ def inject_globals():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if "role" in session:
+    if "role" in session and "session_id" in session:
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
         password = request.form.get("password", "").strip()
 
         if password == CREDENTIALS["admin"]:
+            session_id = uuid.uuid4().hex
             session["role"]    = "admin"
+            session["session_id"] = session_id
             session.permanent  = True
+            
+            user_agent = request.headers.get("User-Agent")
+            ip_address = request.remote_addr
+            session_db.create_session(session_id, "admin", user_agent, ip_address)
+            
             flash("Welcome, Admin!", "success")
             db.log_audit("LOGIN", "admin", "Admin logged in.")
             return redirect(url_for("dashboard"))
@@ -161,6 +179,10 @@ def login():
 @login_required
 def logout():
     role = session.get("role", "unknown")
+    session_id = session.get("session_id")
+    if session_id:
+        session_db.delete_session(session_id)
+        
     db.log_audit("LOGOUT", role, "Admin logged out.")
     session.clear()
     flash("You have been logged out.", "info")
@@ -168,8 +190,28 @@ def logout():
 
 
 # ---------------------------------------------------------------------------
-# Routes — Dashboard
+# Routes — Dashboard & Sessions
 # ---------------------------------------------------------------------------
+
+@app.route("/sessions")
+@login_required
+@operator_required
+def active_sessions():
+    sessions = session_db.get_active_sessions()
+    current_session_id = session.get("session_id")
+    return render_template("sessions.html", sessions=sessions, current_session_id=current_session_id)
+
+@app.route("/sessions/logout/<session_id>", methods=["POST"])
+@login_required
+@operator_required
+def force_logout(session_id):
+    if session_id == session.get("session_id"):
+        flash("You cannot forcefully logout your own current session from here. Use the main logout button.", "warning")
+    else:
+        session_db.delete_session(session_id)
+        flash("Device session successfully terminated.", "success")
+        db.log_audit("FORCE_LOGOUT", "admin", f"Force logged out session: {session_id}")
+    return redirect(url_for("active_sessions"))
 
 @app.route("/")
 @login_required
@@ -493,4 +535,5 @@ def not_found(e):
 
 if __name__ == "__main__":
     db.init_db()
+    session_db.init_session_db()
     app.run(debug=True, host="0.0.0.0", port=5000)
