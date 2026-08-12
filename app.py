@@ -33,7 +33,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # Credentials loaded from .env
 CREDENTIALS = {
-    "admin": os.getenv("ADMIN_PASSWORD", "Admin@2026")
+    "admin": os.getenv("ADMIN_PASSWORD", "01617929270")
 }
 
 # ---------------------------------------------------------------------------
