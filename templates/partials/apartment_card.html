@@ -13,9 +13,11 @@
         </div>
       </div>
       <div class="d-flex flex-column align-items-end gap-1">
-        <span class="apt-badge {% if is_booked %}badge-booked{% else %}badge-available{% endif %}">
+        <span class="apt-badge {% if is_booked %}badge-booked{% elif not can_book_floor(apt.id) %}badge-common{% else %}badge-available{% endif %}">
           {% if is_booked %}
             <i class="bi bi-lock-fill me-1"></i>Booked
+          {% elif not can_book_floor(apt.id) %}
+            <i class="bi bi-shield-lock-fill me-1"></i>{{ apt_floor_label }}
           {% else %}
             <i class="bi bi-check-circle-fill me-1"></i>Available
           {% endif %}
@@ -53,10 +55,15 @@
         </div>
         {% endif %}
       {% else %}
-        <!-- Available: show icon placeholder -->
+        <!-- Available/Common: show icon placeholder -->
         <div class="available-placeholder text-center py-2">
-          <i class="bi bi-house-door text-success" style="font-size:2.8rem; opacity:.6;"></i>
-          <div class="text-muted small mt-1">Ready to Book</div>
+          {% if not can_book_floor(apt.id) %}
+            <i class="bi bi-diagram-3 text-secondary" style="font-size:2.8rem; opacity:.6;"></i>
+            <div class="text-muted small mt-1">{{ apt_floor_label }}</div>
+          {% else %}
+            <i class="bi bi-house-door text-success" style="font-size:2.8rem; opacity:.6;"></i>
+            <div class="text-muted small mt-1">Ready to Book</div>
+          {% endif %}
         </div>
       {% endif %}
     </div>

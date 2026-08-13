@@ -53,12 +53,16 @@ def get_floor(apt_id: str) -> int:
 
 
 def can_book_apartment(apt_id: str, role: str) -> bool:
-    """Return True as all admin roles can book any apartment."""
+    """Check if apartment can be booked."""
+    if get_floor(apt_id) == 1:
+        return False
     return True
 
 
 def floor_restriction_label(apt_id: str) -> str:
     """Return a short human-readable restriction label for the UI."""
+    if get_floor(apt_id) == 1:
+        return "Common Space"
     return "Open"
 
 # ---------------------------------------------------------------------------

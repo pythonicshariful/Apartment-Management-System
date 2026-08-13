@@ -369,6 +369,11 @@ body {
   color: var(--color-red);
   border: 1px solid rgba(239,68,68,0.3);
 }
+.badge-common {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.4);
+}
 
 /* Tenant Info */
 .tenant-avatar {
@@ -569,6 +574,56 @@ body {
   border-color: var(--color-gold) !important;
   color: var(--color-gold) !important;
   box-shadow: 0 0 15px rgba(240,180,41,0.2) !important;
+}
+/* Print Styles */
+@media print {
+  body { background: #fff; color: #000; overflow: visible !important; padding: 0 !important; }
+  nav, .ams-footer, .btn, .apt-actions { display: none !important; }
+  .glass-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; margin-bottom: 20px; }
+}
+
+/* Compact Grid View */
+.compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 12px;
+  padding: 1rem 0;
+}
+.compact-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: #fff;
+  border: 2px solid transparent;
+}
+.compact-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.compact-booked {
+  background-color: var(--color-red-dim);
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+.compact-available {
+  background-color: var(--color-green-dim);
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+.compact-common {
+  background-color: rgba(100, 116, 139, 0.2);
+  border-color: rgba(100, 116, 139, 0.4);
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+.compact-common:hover {
+  transform: none;
+  box-shadow: none;
 }
 .role-btn:hover {
   border-color: var(--color-border-hover) !important;

@@ -7,7 +7,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), 'apartments.db')
 APARTMENTS = [
     (f"{block}{num}", 'Available', None)
     for block in ['A', 'B', 'C', 'D', 'E', 'F']
-    for num in range(1, 15)
+    for num in range(1, 16)
 ]
 
 def get_db():

@@ -24,6 +24,15 @@
           <span class="legend-dot booked"></span> Booked
         </span>
       </div>
+      
+      <!-- View Toggle -->
+      <div class="btn-group" role="group">
+        <input type="radio" class="btn-check" name="viewToggle" id="viewCards" autocomplete="off" checked onchange="toggleView('cards')">
+        <label class="btn btn-sm btn-outline-gold" for="viewCards" title="Card View"><i class="bi bi-grid-fill"></i></label>
+        
+        <input type="radio" class="btn-check" name="viewToggle" id="viewCompact" autocomplete="off" onchange="toggleView('compact')">
+        <label class="btn btn-sm btn-outline-gold" for="viewCompact" title="Compact View"><i class="bi bi-ui-checks-grid"></i></label>
+      </div>
       <button class="btn btn-sm btn-outline-info" id="refreshBtn" onclick="refreshApartments()" title="Refresh">
         <i class="bi bi-arrow-clockwise me-1"></i>Refresh
       </button>
@@ -96,6 +105,23 @@
     {% set apt_floor_label = floor_label(apt.id) %}
     {% include "partials/apartment_card.html" %}
     {% endfor %}
+  </div>
+
+  <!-- ── Compact Apartment Grid ─────────────────────────────────────────── -->
+  <div class="compact-view-container d-none" id="apartmentCompact">
+    <div class="compact-grid">
+      {% for apt in apartments %}
+      {% set is_booked   = apt.status == 'Booked' %}
+      {% set can_book    = not is_booked and can_book_floor(apt.id) %}
+      {% set apt_floor_label = floor_label(apt.id) %}
+      
+      <div class="compact-box {{ 'compact-booked' if is_booked else ('compact-common' if not can_book else 'compact-available') }}"
+           title="{{ apt.id }} - {{ 'Booked by ' ~ apt.name if is_booked else (apt_floor_label if not can_book else 'Available') }}"
+           onclick="{% if is_booked %}openProfileModal('{{ apt.id }}'){% elif can_book %}openBookingModal('{{ apt.id }}'){% endif %}">
+        {{ apt.id }}
+      </div>
+      {% endfor %}
+    </div>
   </div>
 
 </div>
@@ -179,6 +205,19 @@
         btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Refresh';
         btn.disabled  = false;
       });
+  }
+
+  // View toggle
+  function toggleView(view) {
+    const grid = document.getElementById('apartmentGrid');
+    const compact = document.getElementById('apartmentCompact');
+    if (view === 'compact') {
+      grid.classList.add('d-none');
+      compact.classList.remove('d-none');
+    } else {
+      compact.classList.add('d-none');
+      grid.classList.remove('d-none');
+    }
   }
 
   // Report dropdown toggle
