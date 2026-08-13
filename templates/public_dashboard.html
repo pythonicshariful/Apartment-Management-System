@@ -24,6 +24,15 @@
           <span class="legend-dot booked"></span> Booked
         </span>
       </div>
+      
+      <!-- View Toggle -->
+      <div class="btn-group" role="group">
+        <input type="radio" class="btn-check" name="viewToggle" id="viewCards" autocomplete="off" checked onchange="toggleView('cards')">
+        <label class="btn btn-sm btn-outline-gold" for="viewCards" title="Card View"><i class="bi bi-grid-fill"></i></label>
+        
+        <input type="radio" class="btn-check" name="viewToggle" id="viewCompact" autocomplete="off" onchange="toggleView('compact')">
+        <label class="btn btn-sm btn-outline-gold" for="viewCompact" title="Compact View"><i class="bi bi-ui-checks-grid"></i></label>
+      </div>
       <button class="btn btn-sm btn-outline-info" id="refreshBtn" onclick="refreshApartments()" title="Refresh">
         <i class="bi bi-arrow-clockwise me-1"></i>Refresh
       </button>
@@ -79,6 +88,22 @@
     {% endfor %}
   </div>
 
+  <!-- ── Compact Apartment Grid ─────────────────────────────────────────── -->
+  <div class="compact-view-container d-none" id="apartmentCompact">
+    <div class="compact-grid">
+      {% for apt in apartments %}
+      {% set is_booked   = apt.status == 'Booked' %}
+      {% set can_book    = not is_booked and can_book_floor(apt.id) %}
+      {% set apt_floor_label = floor_label(apt.id) %}
+      
+      <div class="compact-box {{ 'compact-booked' if is_booked else ('compact-common' if not can_book else 'compact-available') }}"
+           title="{{ apt.id }} - {{ 'Booked' if is_booked else (apt_floor_label if not can_book else 'Available') }}">
+        {{ apt.id }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
 </div>
 
 <!-- ── Profile Modal ────────────────────────────────────────────────────── -->
@@ -88,6 +113,18 @@
 
 {% block scripts %}
 <script>
+  // View toggle
+  function toggleView(view) {
+    const grid = document.getElementById('apartmentGrid');
+    const compact = document.getElementById('apartmentCompact');
+    if (view === 'compact') {
+      grid.classList.add('d-none');
+      compact.classList.remove('d-none');
+    } else {
+      compact.classList.add('d-none');
+      grid.classList.remove('d-none');
+    }
+  }
   // Auto-refresh every 30 seconds
   setInterval(() => {
     fetch('/public')
@@ -96,8 +133,12 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const newGrid = doc.getElementById('apartmentGrid');
+        const newCompact = doc.getElementById('apartmentCompact');
         if (newGrid) {
             document.getElementById('apartmentGrid').innerHTML = newGrid.innerHTML;
+        }
+        if (newCompact) {
+            document.getElementById('apartmentCompact').innerHTML = newCompact.innerHTML;
         }
         document.getElementById('lastUpdated').textContent =
           'Updated ' + new Date().toLocaleTimeString();
@@ -116,8 +157,12 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const newGrid = doc.getElementById('apartmentGrid');
+        const newCompact = doc.getElementById('apartmentCompact');
         if (newGrid) {
             document.getElementById('apartmentGrid').innerHTML = newGrid.innerHTML;
+        }
+        if (newCompact) {
+            document.getElementById('apartmentCompact').innerHTML = newCompact.innerHTML;
         }
         document.getElementById('lastUpdated').textContent =
           'Updated ' + new Date().toLocaleTimeString();
