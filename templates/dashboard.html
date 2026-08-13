@@ -25,6 +25,12 @@
         </span>
       </div>
       
+      <!-- Search Input -->
+      <div class="input-group input-group-sm" style="max-width: 200px;">
+        <span class="input-group-text bg-transparent border-gold text-gold"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchInput" class="form-control bg-transparent border-gold text-light" placeholder="Search..." oninput="searchApartments()">
+      </div>
+      
       <!-- View Toggle -->
       <div class="btn-group" role="group">
         <input type="radio" class="btn-check" name="viewToggle" id="viewCards" autocomplete="off" checked onchange="toggleView('cards')">
@@ -218,6 +224,39 @@
       compact.classList.add('d-none');
       grid.classList.remove('d-none');
     }
+  }
+
+  // Search filter
+  function searchApartments() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    
+    // Filter Card View
+    const cards = document.querySelectorAll('.apt-card');
+    cards.forEach(card => {
+      const col = card.parentElement;
+      const id = (card.querySelector('.apt-id')?.innerText || '').toLowerCase();
+      const name = (card.querySelector('.tenant-name')?.innerText || '').toLowerCase();
+      const phone = (card.querySelector('.tenant-phone')?.innerText || '').toLowerCase();
+      
+      if (id.includes(query) || name.includes(query) || phone.includes(query)) {
+        col.style.display = '';
+      } else {
+        col.style.display = 'none';
+      }
+    });
+
+    // Filter Compact View
+    const boxes = document.querySelectorAll('.compact-box');
+    boxes.forEach(box => {
+      const title = (box.getAttribute('title') || '').toLowerCase();
+      const id = (box.innerText || '').toLowerCase();
+      
+      if (id.includes(query) || title.includes(query)) {
+        box.style.display = '';
+      } else {
+        box.style.display = 'none';
+      }
+    });
   }
 
   // Report dropdown toggle
